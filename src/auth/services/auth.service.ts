@@ -13,6 +13,7 @@ import { AuthDto } from '../dto/auth.dto';
 import { AuthRepository } from '../repositories/auth.repository';
 import { ConfigService } from '@nestjs/config';
 import { EnvironmentDto } from 'src/common/dto/environment.dto';
+import { Roles } from 'src/utils/enum/roles.enum';
 
 @Injectable()
 export class AuthService {
@@ -55,9 +56,10 @@ export class AuthService {
         returnSecureToken: false
       };
 
-      await firstValueFrom(this.httpService.post(`${this.config.FIREBASE_AUTH_API}:signUp?key=${this.config.API_KEY}`, requestBody));
+      const result = await firstValueFrom(this.httpService.post(`${this.config.FIREBASE_AUTH_API}:signUp?key=${this.config.API_KEY}`, requestBody));
+      const { localId } = result.data;
 
-      // await this.auth.setCustomUserClaims('', { id: '' });
+      await this.auth.setCustomUserClaims(localId, { role: Roles.USER });
 
     } catch (err) {
       throw new BadRequestException(err?.response?.data);
